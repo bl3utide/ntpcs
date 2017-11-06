@@ -1,6 +1,7 @@
 #include "ntpcs.h"
 
-AudioEffect* createEffectInstance(audioMasterCallback audioMaster) {
+AudioEffect* createEffectInstance(audioMasterCallback audioMaster)
+{
     return new Ntpcs(audioMaster);
 }
 
