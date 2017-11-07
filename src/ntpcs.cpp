@@ -57,8 +57,8 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             debug << "\n";
             debug.flush();
 #endif
-            // note off/on (channel 0)
-            if (inEv->midiData[0] == -128 || inEv->midiData[0] == -112)
+            // Receive Note-Off message (accept all channels)
+            if (char(0x80) <= inEv->midiData[0] && inEv->midiData[0] <= char(0x8f))
             {
                 if (eventCount < MAX_EVENTS)
                 {
@@ -73,7 +73,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                 }
 
                 /*
-                // 1oct上げられるキーナンバーのときのみ1oct上げる
+                // Up one octave (if possible)
                 if (_midiEvent->midiData[0] <= 0x73)
                 {
                     midiEvent.midiData[1] = _midiEvent->midiData[1] + 12;
@@ -83,6 +83,21 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     midiEvent.midiData[1] = _midiEvent->midiData[1];
                 }
                 */
+            }
+            // Received Note-On message (accept all channels)
+            else if (char(0x90) <= inEv->midiData[0] && inEv->midiData[0] <= char(0x9f))
+            {
+                if (eventCount < MAX_EVENTS)
+                {
+                    VstMidiEvent* ev = (VstMidiEvent*)outEvents->events[eventCount];
+                    ++eventCount;
+                    ev->deltaFrames = inEv->deltaFrames;
+                    ev->noteLength = 0;
+                    ev->midiData[0] = inEv->midiData[0];
+                    ev->midiData[1] = inEv->midiData[1];
+                    ev->midiData[2] = inEv->midiData[2];
+                    ev->midiData[3] = inEv->midiData[3];
+                }
             }
         }
     }
