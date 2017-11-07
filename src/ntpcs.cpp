@@ -23,7 +23,8 @@ Ntpcs::Ntpcs(audioMasterCallback audioMaster)
     // init events
     size_t size = sizeof(VstEvents) + MAX_EVENTS * sizeof(VstEvent*);
     outEvents = (VstEvents*)malloc(size);
-    for (unsigned int i = 0; i < MAX_EVENTS; ++i) {
+    for (unsigned int i = 0; i < MAX_EVENTS; ++i)
+    {
         outEvents->events[i] = (VstEvent*)calloc(1, sizeof(VstMidiEvent));
         VstEvent* ev = outEvents->events[i];
         ev->type = kVstMidiType;
@@ -37,7 +38,8 @@ Ntpcs::~Ntpcs()
     debug.close();
 #endif
 
-    for (unsigned int i = 0; i < MAX_EVENTS; ++i) {
+    for (unsigned int i = 0; i < MAX_EVENTS; ++i)
+    {
         free(outEvents->events[i]);
     }
     free(outEvents);
@@ -77,10 +79,12 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
 
                 /*
                 // 1oct上げられるキーナンバーのときのみ1oct上げる
-                if (_midiEvent->midiData[0] <= 0x73) {
+                if (_midiEvent->midiData[0] <= 0x73)
+                {
                     midiEvent.midiData[1] = _midiEvent->midiData[1] + 12;
                 }
-                else {
+                else
+                {
                     midiEvent.midiData[1] = _midiEvent->midiData[1];
                 }
                 */
