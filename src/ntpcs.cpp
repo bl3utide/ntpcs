@@ -37,7 +37,6 @@ Ntpcs::~Ntpcs()
 #if _DEBUG
     debug.close();
 #endif
-
     for (unsigned int i = 0; i < MAX_EVENTS; ++i)
     {
         free(outEvents->events[i]);
@@ -47,21 +46,17 @@ Ntpcs::~Ntpcs()
 
 VstInt32 Ntpcs::processEvents(VstEvents* events)
 {
-
     for (int i = 0; i < events->numEvents; ++i)
     {
         if (events->events[i]->type == kVstMidiType)
         {
-
             VstMidiEvent* inEv = (VstMidiEvent*)(events->events[i]);
-
 #if _DEBUG
             debug << "midi data 1: ";
             debug << int(inEv->midiData[0]);
             debug << "\n";
             debug.flush();
 #endif
-
             // note off/on (channel 0)
             if (inEv->midiData[0] == -128 || inEv->midiData[0] == -112)
             {
