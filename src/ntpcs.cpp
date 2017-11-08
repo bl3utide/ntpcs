@@ -84,18 +84,6 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evStop->midiData[2] = 0;
                     evStop->midiData[3] = 0;
                 }
-
-                /*
-                // Up one octave (if possible)
-                if (_midiEvent->midiData[0] <= 0x73)
-                {
-                    midiEvent.midiData[1] = _midiEvent->midiData[1] + 12;
-                }
-                else
-                {
-                    midiEvent.midiData[1] = _midiEvent->midiData[1];
-                }
-                */
             }
             // Received NOTE ON message (accept all channels)
             else if (NOTE_ON <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_ON + 0x0f)
@@ -133,17 +121,6 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evStart->midiData[1] = 0;
                     evStart->midiData[2] = 0;
                     evStart->midiData[3] = 0;
-
-                    /*
-                    VstMidiEvent* ev = (VstMidiEvent*)outEvents->events[eventCount];
-                    ++eventCount;
-                    ev->deltaFrames = inEv->deltaFrames;
-                    ev->noteLength = 0;
-                    ev->midiData[0] = inEv->midiData[0];
-                    ev->midiData[1] = inEv->midiData[1];
-                    ev->midiData[2] = inEv->midiData[2];
-                    ev->midiData[3] = inEv->midiData[3];
-                    */
                 }
             }
         }
