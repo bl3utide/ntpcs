@@ -140,6 +140,28 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sampleFra
         (*out2++) = 0.0f;
     }
 
+#if _DEBUG
+    VstTimeInfo* timeInfo = getTimeInfo(
+        kVstTransportPlaying |
+        kVstTransportCycleActive |
+        kVstNanosValid |
+        kVstPpqPosValid |
+        kVstTempoValid |
+        kVstBarsValid |
+        kVstCyclePosValid |
+        kVstClockValid |
+        0
+    );
+    debug << "PpqPos: ";
+    debug << timeInfo->ppqPos;
+    if (timeInfo->samplesToNextClock == 0)
+    {
+        debug << " *";
+    }
+    debug << "\n";
+    debug.flush();
+#endif
+
     // send events
     if (eventCount > 0)
     {
