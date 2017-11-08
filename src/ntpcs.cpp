@@ -57,7 +57,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             debug << "\n";
             debug.flush();
 #endif
-            // Receive Note-Off message (accept all channels)
+            // Receive NOTE OFF message (accept all channels)
             if (NOTE_OFF <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_OFF + 0x0f)
             {
                 if (eventCount < MAX_EVENTS)
@@ -68,7 +68,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     ++eventCount;
                     ev->deltaFrames = inEv->deltaFrames;
                     ev->noteLength = 0;
-                    ev->midiData[0] = PRG_CHANGE + channel;
+                    ev->midiData[0] = PROGRAM_CHANGE + channel;
                     ev->midiData[1] = inEv->midiData[1];        // program number
                     ev->midiData[2] = 0;
                     ev->midiData[3] = 0;
@@ -86,7 +86,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                 }
                 */
             }
-            // Received Note-On message (accept all channels)
+            // Received NOTE ON message (accept all channels)
             else if (NOTE_ON <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_ON + 0x0f)
             {
                 if (eventCount < MAX_EVENTS)
