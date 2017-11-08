@@ -58,7 +58,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             debug.flush();
 #endif
             // Receive Note-Off message (accept all channels)
-            if (char(0x80) <= inEv->midiData[0] && inEv->midiData[0] <= char(0x8f))
+            if (NOTE_OFF <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_OFF + 0x0f)
             {
                 if (eventCount < MAX_EVENTS)
                 {
@@ -85,7 +85,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                 */
             }
             // Received Note-On message (accept all channels)
-            else if (char(0x90) <= inEv->midiData[0] && inEv->midiData[0] <= char(0x9f))
+            else if (NOTE_ON <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_ON + 0x0f)
             {
                 if (eventCount < MAX_EVENTS)
                 {

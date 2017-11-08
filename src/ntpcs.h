@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include "audioeffectx.h"
 
 #define MAX_EVENTS 64
@@ -7,7 +8,12 @@
 #define NUM_PROGRAMS 1
 #define NUM_PARAMS 0
 
-#include <fstream>
+enum MIDI_MSG
+{
+    NOTE_OFF    = 0x80,
+    NOTE_ON     = 0x90,
+    PRG_CHANGE  = 0xc0
+};
 
 class Ntpcs : public AudioEffectX
 {
