@@ -8,7 +8,7 @@
 #define NUM_PROGRAMS 1
 #define NUM_PARAMS 0
 
-enum MIDI_MSG
+enum MidiOrder
 {
     NOTE_OFF        = 0x80,
     NOTE_ON         = 0x90,
