@@ -62,14 +62,15 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             {
                 if (eventCount < MAX_EVENTS)
                 {
+                    char channel = inEv->midiData[0] - NOTE_OFF;
                     VstMidiEvent* ev = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
                     ev->deltaFrames = inEv->deltaFrames;
                     ev->noteLength = 0;
-                    ev->midiData[0] = inEv->midiData[0];
-                    ev->midiData[1] = inEv->midiData[1];
-                    ev->midiData[2] = inEv->midiData[2];
-                    ev->midiData[3] = inEv->midiData[3];
+                    ev->midiData[0] = PRG_CHANGE + channel;
+                    ev->midiData[1] = inEv->midiData[1];        // program number
+                    ev->midiData[2] = 0;
+                    ev->midiData[3] = 0;
                 }
 
                 /*
