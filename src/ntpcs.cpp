@@ -62,6 +62,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             {
                 if (eventCount < MAX_EVENTS)
                 {
+                    // PROGRAM CHANGE message
                     char channel = inEv->midiData[0] - NOTE_OFF;
                     VstMidiEvent* ev = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
