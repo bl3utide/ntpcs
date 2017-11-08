@@ -62,16 +62,15 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             {
                 if (eventCount < MAX_EVENTS)
                 {
-                    // PROGRAM CHANGE message
-                    char channel = inEv->midiData[0] - NOTE_OFF;
-                    VstMidiEvent* ev = (VstMidiEvent*)outEvents->events[eventCount];
+                    // STOP message
+                    VstMidiEvent* evStop = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
-                    ev->deltaFrames = inEv->deltaFrames;
-                    ev->noteLength = 0;
-                    ev->midiData[0] = PROGRAM_CHANGE + channel;
-                    ev->midiData[1] = inEv->midiData[1];        // program number
-                    ev->midiData[2] = 0;
-                    ev->midiData[3] = 0;
+                    evStop->deltaFrames = inEv->deltaFrames;
+                    evStop->noteLength = 0;
+                    evStop->midiData[0] = STOP;
+                    evStop->midiData[1] = 0;
+                    evStop->midiData[2] = 0;
+                    evStop->midiData[3] = 0;
                 }
 
                 /*
@@ -89,8 +88,30 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             // Received NOTE ON message (accept all channels)
             else if (NOTE_ON <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_ON + 0x0f)
             {
-                if (eventCount < MAX_EVENTS)
+                if (eventCount < MAX_EVENTS - 1)    // set two messages
                 {
+                    // PROGRAM CHANGE message
+                    char channel = inEv->midiData[0] - NOTE_OFF;
+                    VstMidiEvent* evPrgChg = (VstMidiEvent*)outEvents->events[eventCount];
+                    ++eventCount;
+                    evPrgChg->deltaFrames = inEv->deltaFrames;
+                    evPrgChg->noteLength = 0;
+                    evPrgChg->midiData[0] = PROGRAM_CHANGE + channel;
+                    evPrgChg->midiData[1] = inEv->midiData[1];        // program number
+                    evPrgChg->midiData[2] = 0;
+                    evPrgChg->midiData[3] = 0;
+
+                    // START message
+                    VstMidiEvent* evStart = (VstMidiEvent*)outEvents->events[eventCount];
+                    ++eventCount;
+                    evStart->deltaFrames = inEv->deltaFrames;
+                    evStart->noteLength = 0;
+                    evStart->midiData[0] = START;
+                    evStart->midiData[1] = 0;
+                    evStart->midiData[2] = 0;
+                    evStart->midiData[3] = 0;
+
+                    /*
                     VstMidiEvent* ev = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
                     ev->deltaFrames = inEv->deltaFrames;
@@ -99,6 +120,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     ev->midiData[1] = inEv->midiData[1];
                     ev->midiData[2] = inEv->midiData[2];
                     ev->midiData[3] = inEv->midiData[3];
+                    */
                 }
             }
         }

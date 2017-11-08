@@ -12,7 +12,10 @@ enum MidiOrder
 {
     NOTE_OFF        = 0x80,
     NOTE_ON         = 0x90,
-    PROGRAM_CHANGE  = 0xc0
+    PROGRAM_CHANGE  = 0xC0,
+    CLOCK           = 0xF8,
+    START           = 0xFA,
+    STOP            = 0xFC
 };
 
 class Ntpcs : public AudioEffectX
