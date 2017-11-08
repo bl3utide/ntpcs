@@ -74,6 +74,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
 #endif
                 if (eventCount < MAX_EVENTS)
                 {
+                    /*
                     // STOP message
                     VstMidiEvent* evStop = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
@@ -83,6 +84,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evStop->midiData[1] = 0;
                     evStop->midiData[2] = 0;
                     evStop->midiData[3] = 0;
+                    */
                 }
             }
             // Received NOTE ON message (accept all channels)
@@ -112,6 +114,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evPrgChg->midiData[2] = 0;
                     evPrgChg->midiData[3] = 0;
 
+                    /*
                     // START message
                     VstMidiEvent* evStart = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
@@ -121,6 +124,7 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evStart->midiData[1] = 0;
                     evStart->midiData[2] = 0;
                     evStart->midiData[3] = 0;
+                    */
                 }
             }
         }
