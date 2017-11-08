@@ -52,14 +52,26 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
         {
             VstMidiEvent* inEv = (VstMidiEvent*)(events->events[i]);
 #if _DEBUG
-            debug << "midi data 1: ";
+            debug << "input MIDI msg: ";
             debug << int(inEv->midiData[0]);
+            debug << " ";
+            debug << int(inEv->midiData[1]);
+            debug << " ";
+            debug << int(inEv->midiData[2]);
+            debug << " ";
+            debug << int(inEv->midiData[3]);
+            debug << " ";
             debug << "\n";
             debug.flush();
 #endif
             // Receive NOTE OFF message (accept all channels)
-            if (NOTE_OFF <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_OFF + 0x0f)
+            if (NOTE_OFF <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_OFF + 0x0f)
             {
+#if _DEBUG
+                debug << "Received NOTE OFF";
+                debug << "\n";
+                debug.flush();
+#endif
                 if (eventCount < MAX_EVENTS)
                 {
                     // STOP message
@@ -86,8 +98,13 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                 */
             }
             // Received NOTE ON message (accept all channels)
-            else if (NOTE_ON <= inEv->midiData[0] && inEv->midiData[0] <= NOTE_ON + 0x0f)
+            else if (NOTE_ON <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_ON + 0x0f)
             {
+#if _DEBUG
+                debug << "Received NOTE ON";
+                debug << "\n";
+                debug.flush();
+#endif
                 if (eventCount < MAX_EVENTS - 1)    // set two messages
                 {
                     // PROGRAM CHANGE message

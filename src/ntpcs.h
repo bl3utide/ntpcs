@@ -8,15 +8,12 @@
 #define NUM_PROGRAMS 1
 #define NUM_PARAMS 0
 
-enum MidiOrder
-{
-    NOTE_OFF        = 0x80,
-    NOTE_ON         = 0x90,
-    PROGRAM_CHANGE  = 0xC0,
-    CLOCK           = 0xF8,
-    START           = 0xFA,
-    STOP            = 0xFC
-};
+const char NOTE_OFF         = 0x80;
+const char NOTE_ON          = 0x90;
+const char PROGRAM_CHANGE   = 0xC0;
+const char CLOCK            = 0xF8;
+const char START            = 0xFA;
+const char STOP             = 0xFC;
 
 class Ntpcs : public AudioEffectX
 {
