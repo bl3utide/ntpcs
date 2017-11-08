@@ -108,7 +108,13 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                 if (eventCount < MAX_EVENTS - 1)    // set two messages
                 {
                     // PROGRAM CHANGE message
-                    char channel = inEv->midiData[0] - NOTE_OFF;
+                    char channel = inEv->midiData[0] - NOTE_ON;
+#if _DEBUG
+                    debug << "Received channel: ";
+                    debug << int(channel);
+                    debug << "\n";
+                    debug.flush();
+#endif
                     VstMidiEvent* evPrgChg = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
                     evPrgChg->deltaFrames = inEv->deltaFrames;
