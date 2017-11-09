@@ -1,7 +1,10 @@
 #pragma once
 
+#if _DEBUG
 #include <fstream>
+#endif
 #include "audioeffectx.h"
+#include "util\logger.h"
 
 #define MAX_EVENTS 64
 
@@ -38,9 +41,8 @@ public:
 
 private:
 #if _DEBUG
-    std::ofstream debug;
+    Logger* logger;
 #endif
-
     VstInt32 eventCount;
     VstEvents* outEvents;
 };

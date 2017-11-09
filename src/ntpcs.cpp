@@ -10,9 +10,8 @@ Ntpcs::Ntpcs(audioMasterCallback audioMaster)
     , eventCount(0)
 {
 #if _DEBUG
-    debug.open("./ntpcs_run.log", std::ios::out | std::ios::app);
-    debug << "Loading\n";
-    debug.flush();
+    logger = new Logger("./ntpcs_run.log");
+    logger->addOneLine("Loading");
 #endif
     setNumInputs(0);
     setNumOutputs(2);
@@ -35,7 +34,8 @@ Ntpcs::Ntpcs(audioMasterCallback audioMaster)
 Ntpcs::~Ntpcs()
 {
 #if _DEBUG
-    debug.close();
+    logger->addOneLine("Closed");
+    delete logger;
 #endif
     for (unsigned int i = 0; i < MAX_EVENTS; ++i)
     {
@@ -52,25 +52,19 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
         {
             VstMidiEvent* inEv = (VstMidiEvent*)(events->events[i]);
 #if _DEBUG
-            debug << "input MIDI msg: ";
-            debug << int(inEv->midiData[0]);
-            debug << " ";
-            debug << int(inEv->midiData[1]);
-            debug << " ";
-            debug << int(inEv->midiData[2]);
-            debug << " ";
-            debug << int(inEv->midiData[3]);
-            debug << " ";
-            debug << "\n";
-            debug.flush();
+            logger->addFrontDate();
+            logger->addMessage("Input MIDI msg:");
+            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[0]));
+            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[1]));
+            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[2]));
+            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[3]));
+            logger->addEnd();
 #endif
             // Receive NOTE OFF message (accept all channels)
             if (NOTE_OFF <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_OFF + 0x0f)
             {
 #if _DEBUG
-                debug << "Received NOTE OFF";
-                debug << "\n";
-                debug.flush();
+                logger->addOneLine("Received NOTE OFF");
 #endif
                 if (eventCount < MAX_EVENTS)
                 {
@@ -91,19 +85,17 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             else if (NOTE_ON <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_ON + 0x0f)
             {
 #if _DEBUG
-                debug << "Received NOTE ON";
-                debug << "\n";
-                debug.flush();
+                logger->addOneLine("Received NOTE ON");
 #endif
                 if (eventCount < MAX_EVENTS - 1)    // set two messages
                 {
                     // PROGRAM CHANGE message
                     char channel = inEv->midiData[0] - NOTE_ON;
 #if _DEBUG
-                    debug << "Received channel: ";
-                    debug << int(channel);
-                    debug << "\n";
-                    debug.flush();
+                    logger->addFrontDate();
+                    logger->addMessage(kLogAlignLeft, 0, "Received channel: ");
+                    logger->addMessage(kLogAlignLeft, 0, int(channel));
+                    logger->addEnd();
 #endif
                     VstMidiEvent* evPrgChg = (VstMidiEvent*)outEvents->events[eventCount];
                     ++eventCount;
@@ -156,14 +148,13 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sampleFra
         kVstClockValid |
         0
     );
-    debug << "PpqPos: ";
-    debug << timeInfo->ppqPos;
+
+    logger->addFrontDate();
+    logger->addMessage(kLogAlignLeft, 0, "PpqPos: ");
+    logger->addMessage(kLogAlignLeft, 0, timeInfo->ppqPos);
     if (timeInfo->samplesToNextClock == 0)
-    {
-        debug << " *";
-    }
-    debug << "\n";
-    debug.flush();
+        logger->addMessage(kLogAlignLeft, 0, " *");
+    logger->addEnd();
 #endif
 
     // send events
