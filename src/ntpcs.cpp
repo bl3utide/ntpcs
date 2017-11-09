@@ -10,7 +10,7 @@ Ntpcs::Ntpcs(audioMasterCallback audioMaster)
     , eventCount(0)
 {
 #if _DEBUG
-    debug.open("./ntpcs.log", std::ios::out | std::ios::app);
+    debug.open("./ntpcs_run.log", std::ios::out | std::ios::app);
     debug << "Loading\n";
     debug.flush();
 #endif
