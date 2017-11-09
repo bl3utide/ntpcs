@@ -1,17 +1,17 @@
 #include "ntpcs.h"
 
-AudioEffect* createEffectInstance(audioMasterCallback audioMaster)
+AudioEffect* createEffectInstance(audioMasterCallback audio_master)
 {
-    return new Ntpcs(audioMaster);
+    return new Ntpcs(audio_master);
 }
 
-Ntpcs::Ntpcs(audioMasterCallback audioMaster)
-    : AudioEffectX(audioMaster, NUM_PROGRAMS, NUM_PARAMS)
-    , eventCount(0)
+Ntpcs::Ntpcs(audioMasterCallback audio_master)
+    : AudioEffectX(audio_master, kNumPrograms, kNumParams)
+    , event_count_(0)
 {
 #if _DEBUG
-    logger = new Logger("./ntpcs_run.log");
-    logger->addOneLine("Loading");
+    logger_ = new Logger("./ntpcs_run.log");
+    logger_->addOneLine("Loading");
 #endif
     setNumInputs(0);
     setNumOutputs(2);
@@ -20,12 +20,12 @@ Ntpcs::Ntpcs(audioMasterCallback audioMaster)
     isSynth(false);
 
     // init events
-    size_t size = sizeof(VstEvents) + MAX_EVENTS * sizeof(VstEvent*);
-    outEvents = (VstEvents*)malloc(size);
-    for (unsigned int i = 0; i < MAX_EVENTS; ++i)
+    size_t size = sizeof(VstEvents) + kMaxEvents * sizeof(VstEvent*);
+    out_events_ = (VstEvents*)malloc(size);
+    for (unsigned int i = 0; i < kMaxEvents; ++i)
     {
-        outEvents->events[i] = (VstEvent*)calloc(1, sizeof(VstMidiEvent));
-        VstEvent* ev = outEvents->events[i];
+        out_events_->events[i] = (VstEvent*)calloc(1, sizeof(VstMidiEvent));
+        VstEvent* ev = out_events_->events[i];
         ev->type = kVstMidiType;
         ev->byteSize = sizeof(VstMidiEvent);
     }
@@ -34,14 +34,14 @@ Ntpcs::Ntpcs(audioMasterCallback audioMaster)
 Ntpcs::~Ntpcs()
 {
 #if _DEBUG
-    logger->addOneLine("Closed");
-    delete logger;
+    logger_->addOneLine("Closed");
+    delete logger_;
 #endif
-    for (unsigned int i = 0; i < MAX_EVENTS; ++i)
+    for (unsigned int i = 0; i < kMaxEvents; ++i)
     {
-        free(outEvents->events[i]);
+        free(out_events_->events[i]);
     }
-    free(outEvents);
+    free(out_events_);
 }
 
 VstInt32 Ntpcs::processEvents(VstEvents* events)
@@ -52,21 +52,21 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
         {
             VstMidiEvent* inEv = (VstMidiEvent*)(events->events[i]);
 #if _DEBUG
-            logger->addFrontDate();
-            logger->addMessage("Input MIDI msg:");
-            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[0]));
-            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[1]));
-            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[2]));
-            logger->addMessage(kLogAlignRight, 5, int(inEv->midiData[3]));
-            logger->addEnd();
+            logger_->addFrontDate();
+            logger_->addMessage("Input MIDI msg:");
+            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[0]));
+            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[1]));
+            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[2]));
+            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[3]));
+            logger_->addEnd();
 #endif
             // Receive NOTE OFF message (accept all channels)
-            if (NOTE_OFF <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_OFF + 0x0f)
+            if (kNoteOff <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= kNoteOff + 0x0f)
             {
 #if _DEBUG
-                logger->addOneLine("Received NOTE OFF");
+                logger_->addOneLine("Received NOTE OFF");
 #endif
-                if (eventCount < MAX_EVENTS)
+                if (event_count_ < kMaxEvents)
                 {
                     /*
                     // STOP message
@@ -82,26 +82,26 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                 }
             }
             // Received NOTE ON message (accept all channels)
-            else if (NOTE_ON <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= NOTE_ON + 0x0f)
+            else if (kNoteOn <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= kNoteOn + 0x0f)
             {
 #if _DEBUG
-                logger->addOneLine("Received NOTE ON");
+                logger_->addOneLine("Received NOTE ON");
 #endif
-                if (eventCount < MAX_EVENTS - 1)    // set two messages
+                if (event_count_ < kMaxEvents - 1)    // set two messages
                 {
                     // PROGRAM CHANGE message
-                    char channel = inEv->midiData[0] - NOTE_ON;
+                    char channel = inEv->midiData[0] - kNoteOn;
 #if _DEBUG
-                    logger->addFrontDate();
-                    logger->addMessage(kLogAlignLeft, 0, "Received channel: ");
-                    logger->addMessage(kLogAlignLeft, 0, int(channel));
-                    logger->addEnd();
+                    logger_->addFrontDate();
+                    logger_->addMessage(kLogAlignLeft, 0, "Received channel: ");
+                    logger_->addMessage(kLogAlignLeft, 0, int(channel));
+                    logger_->addEnd();
 #endif
-                    VstMidiEvent* evPrgChg = (VstMidiEvent*)outEvents->events[eventCount];
-                    ++eventCount;
+                    VstMidiEvent* evPrgChg = (VstMidiEvent*)out_events_->events[event_count_];
+                    ++event_count_;
                     evPrgChg->deltaFrames = inEv->deltaFrames;
                     evPrgChg->noteLength = 0;
-                    evPrgChg->midiData[0] = PROGRAM_CHANGE + channel;
+                    evPrgChg->midiData[0] = kProgramChange + channel;
                     evPrgChg->midiData[1] = inEv->midiData[1];        // program number
                     evPrgChg->midiData[2] = 0;
                     evPrgChg->midiData[3] = 0;
@@ -125,19 +125,19 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
     return 1;
 }
 
-void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sampleFrames)
+void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_frames)
 {
     // dummy
     float *out1 = outputs[0];
     float *out2 = outputs[1];
-    for (VstInt32 i = 0; i < sampleFrames; ++i)
+    for (VstInt32 i = 0; i < sample_frames; ++i)
     {
         (*out1++) = 0.0f;
         (*out2++) = 0.0f;
     }
 
 #if _DEBUG
-    VstTimeInfo* timeInfo = getTimeInfo(
+    VstTimeInfo* time_info = getTimeInfo(
         kVstTransportPlaying |
         kVstTransportCycleActive |
         kVstNanosValid |
@@ -149,23 +149,23 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sampleFra
         0
     );
 
-    if (timeInfo->flags & kVstTransportPlaying)
+    if (time_info->flags & kVstTransportPlaying)
     {
-        logger->addFrontDate();
-        logger->addMessage(kLogAlignLeft, 0, "PpqPos: ");
-        logger->addMessage(kLogAlignLeft, 0, timeInfo->ppqPos);
-        if (timeInfo->samplesToNextClock == 0)
-            logger->addMessage(kLogAlignLeft, 0, " *");
-        logger->addEnd();
+        logger_->addFrontDate();
+        logger_->addMessage(kLogAlignLeft, 0, "PpqPos: ");
+        logger_->addMessage(kLogAlignLeft, 0, time_info->ppqPos);
+        if (time_info->samplesToNextClock == 0)
+            logger_->addMessage(kLogAlignLeft, 0, " *");
+        logger_->addEnd();
     }
 #endif
 
     // send events
-    if (eventCount > 0)
+    if (event_count_ > 0)
     {
-        outEvents->numEvents = eventCount;
-        sendVstEventsToHost(outEvents);
-        eventCount = 0;
+        out_events_->numEvents = event_count_;
+        sendVstEventsToHost(out_events_);
+        event_count_ = 0;
     }
 }
 

@@ -14,42 +14,25 @@ enum LogAlign
 class Logger
 {
 public:
-    Logger(const char* file_path)
-        : file_path_(file_path)
+    Logger(const char*);
+    ~Logger();
+    void addFrontDate();
+    void addEnd();
+
+    template<typename T> void addOneLine(T msg)
     {
-        log_.open(file_path, std::ios::out | std::ios::app);
+        addFrontDate();
+        log_ << msg;
+        addNewLine();
+        log_.flush();
     }
 
-    ~Logger()
-    {
-        log_.close();
-    }
-
-    void addFrontDate()
-    {
-        tm* time = getTime();
-        addNumFormat(time->tm_year + 1900, 4, '0');
-        log_ << '-';
-        addNumFormat(time->tm_mon, 2, '0');
-        log_ << '-';
-        addNumFormat(time->tm_mday, 2, '0');
-        log_ << ' ';
-        addNumFormat(time->tm_hour, 2, '0');
-        log_ << ':';
-        addNumFormat(time->tm_min, 2, '0');
-        log_ << ':';
-        addNumFormat(time->tm_sec, 2, '0');
-        log_ << ' ';
-    }
-
-    template<typename T>
-    void addMessage(T msg)
+    template<typename T> void addMessage(T msg)
     {
         log_ << msg;
     }
 
-    template<typename T>
-    void addMessage(LogAlign align, std::streamsize width, T msg)
+    template<typename T> void addMessage(LogAlign align, std::streamsize width, T msg)
     {
         if (align == kLogAlignLeft)
             log_ << std::left << std::setw(width) << std::setfill(' ') << msg;
@@ -87,21 +70,6 @@ public:
     }
     */
 
-    void addEnd()
-    {
-        addNewLine();
-        log_.flush();
-    }
-
-    template<typename T>
-    void addOneLine(T msg)
-    {
-        addFrontDate();
-        log_ << msg;
-        addNewLine();
-        log_.flush();
-    }
-
     /*
     void add(const char* msg, std::streamsize width, char fillchar)
     {
@@ -112,23 +80,11 @@ public:
     */
 
 protected:
-    void addNewLine()
-    {
-        log_ << "\r\n";
-    }
+    void addNewLine();
 
 private:
     const char* file_path_;
     std::ofstream log_;
-
-    void addNumFormat(int v, std::streamsize w, char fc)
-    {
-        log_ << std::right << std::setw(w) << std::setfill(fc) << v;
-    }
-
-    tm* getTime()
-    {
-        time_t now = std::time(nullptr);
-        return localtime(&now);
-    }
+    void addNumFormat(int, std::streamsize, char);
+    tm* getTime();
 };

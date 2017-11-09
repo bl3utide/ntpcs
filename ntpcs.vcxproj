@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\ntpcs.cpp" />
+    <ClCompile Include="src\util\logger.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\audioeffect.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\audioeffectx.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\vstplugmain.cpp" />
