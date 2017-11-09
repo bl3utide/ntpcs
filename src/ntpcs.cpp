@@ -149,12 +149,15 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sampleFra
         0
     );
 
-    logger->addFrontDate();
-    logger->addMessage(kLogAlignLeft, 0, "PpqPos: ");
-    logger->addMessage(kLogAlignLeft, 0, timeInfo->ppqPos);
-    if (timeInfo->samplesToNextClock == 0)
-        logger->addMessage(kLogAlignLeft, 0, " *");
-    logger->addEnd();
+    if (timeInfo->flags & kVstTransportPlaying)
+    {
+        logger->addFrontDate();
+        logger->addMessage(kLogAlignLeft, 0, "PpqPos: ");
+        logger->addMessage(kLogAlignLeft, 0, timeInfo->ppqPos);
+        if (timeInfo->samplesToNextClock == 0)
+            logger->addMessage(kLogAlignLeft, 0, " *");
+        logger->addEnd();
+    }
 #endif
 
     // send events
