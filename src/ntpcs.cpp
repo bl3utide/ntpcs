@@ -46,6 +46,9 @@ Ntpcs::~Ntpcs()
 
 VstInt32 Ntpcs::processEvents(VstEvents* events)
 {
+#if _DEBUG
+    logger_->addOneLine("-- START processEvents --");
+#endif
     for (int i = 0; i < events->numEvents; ++i)
     {
         if (events->events[i]->type == kVstMidiType)
@@ -122,11 +125,18 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
         }
     }
 
+#if _DEBUG
+    logger_->addOneLine("-- END processEvents --");
+#endif
     return 1;
 }
 
 void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_frames)
 {
+#if _DEBUG
+    logger_->addOneLine("-- START processReplacing --");
+#endif
+
     // dummy
     float *out1 = outputs[0];
     float *out2 = outputs[1];
@@ -167,6 +177,10 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         sendVstEventsToHost(out_events_);
         event_count_ = 0;
     }
+
+#if _DEBUG
+    logger_->addOneLine("-- END processReplacing --");
+#endif
 }
 
 VstInt32 Ntpcs::canDo(char* text)
