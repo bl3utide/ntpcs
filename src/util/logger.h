@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <ctime>
 #include <vector>
+#include <string>
 
 enum LogAlign
 {
@@ -38,6 +39,13 @@ public:
             log_ << std::left << std::setw(width) << std::setfill(' ') << msg;
         else if (align == kLogAlignRight)
             log_ << std::right << std::setw(width) << std::setfill(' ') << msg;
+    }
+
+    template<typename T> void addMessageSpace(LogAlign align, int space_size, T msg)
+    {
+        std::string msg_str = std::to_string(msg);
+        std::streamsize width = msg_str.length + space_size;
+        addMessage(align, width, msg);
     }
     /*
     template<typename ... Msg>
