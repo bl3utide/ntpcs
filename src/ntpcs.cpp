@@ -47,6 +47,7 @@ Ntpcs::~Ntpcs()
 VstInt32 Ntpcs::processEvents(VstEvents* events)
 {
 #if _DEBUG
+    logger_->addEnd();
     logger_->addOneLine("-- START processEvents --");
 #endif
     for (int i = 0; i < events->numEvents; ++i)
@@ -61,6 +62,9 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[1]));
             logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[2]));
             logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[3]));
+            logger_->addEnd();
+            logger_->addMessageSpace(kLogAlignRight, 20, "   deltaFrames: ");
+            logger_->addMessage(inEv->deltaFrames);
             logger_->addEnd();
 #endif
             // Receive NOTE OFF message (accept all channels)
@@ -136,7 +140,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
 #if _DEBUG
     logger_->addOneLine("-- START processReplacing --");
 
-    logger_->addMessageSpace(kLogAlignRight, 22, "sample frames: ");
+    logger_->addMessageSpace(kLogAlignRight, 23, "sample frames: ");
     logger_->addMessage(sample_frames);
     logger_->addEnd();
 #endif
@@ -166,7 +170,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
     if (time_info->flags & kVstTransportPlaying)
     {
         logger_->addFrontDate();
-        logger_->addMessage(kLogAlignLeft, 0, "PpqPos: ");
+        logger_->addMessageSpace(kLogAlignRight, 3, "PpqPos: ");
         logger_->addMessage(kLogAlignLeft, 0, time_info->ppqPos);
         if (time_info->samplesToNextClock == 0)
             logger_->addMessage(kLogAlignLeft, 0, " *");
