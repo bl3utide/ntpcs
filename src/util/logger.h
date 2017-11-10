@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <ctime>
 #include <vector>
-#include <string>
 
 enum LogAlign
 {
@@ -19,6 +18,7 @@ public:
     ~Logger();
     void addFrontDate();
     void addEnd();
+    void addMessageSpace(LogAlign, int, const char*);
 
     template<typename T> void addOneLine(T msg)
     {
@@ -33,7 +33,8 @@ public:
         log_ << msg;
     }
 
-    template<typename T> void addMessage(LogAlign align, std::streamsize width, T msg)
+    template<typename T>
+    void addMessage(LogAlign align, std::streamsize width, T msg)
     {
         if (align == kLogAlignLeft)
             log_ << std::left << std::setw(width) << std::setfill(' ') << msg;
@@ -41,12 +42,6 @@ public:
             log_ << std::right << std::setw(width) << std::setfill(' ') << msg;
     }
 
-    template<typename T> void addMessageSpace(LogAlign align, int space_size, T msg)
-    {
-        std::string msg_str = std::to_string(msg);
-        std::streamsize width = msg_str.length + space_size;
-        addMessage(align, width, msg);
-    }
     /*
     template<typename ... Msg>
     void addMessage(Msg ... msg)

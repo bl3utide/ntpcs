@@ -34,6 +34,12 @@ void Logger::addEnd()
     log_.flush();
 }
 
+void Logger::addMessageSpace(LogAlign align, int space_size, const char* msg)
+{
+    std::streamsize width = strlen(msg) + space_size;
+    addMessage(align, width, msg);
+}
+
 void Logger::addNewLineCharacter()
 {
     log_ << "\r\n";
