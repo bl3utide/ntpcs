@@ -135,6 +135,9 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
 {
 #if _DEBUG
     logger_->addOneLine("-- START processReplacing --");
+
+    logger_->addMessageSpace(kLogAlignRight, 20, "sample frames: ");
+    logger_->addEnd();
 #endif
 
     // dummy
