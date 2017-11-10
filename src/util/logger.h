@@ -23,7 +23,7 @@ public:
     {
         addFrontDate();
         log_ << msg;
-        addNewLine();
+        addNewLineCharacter();
         log_.flush();
     }
 
@@ -80,7 +80,7 @@ public:
     */
 
 protected:
-    void addNewLine();
+    void addNewLineCharacter();
 
 private:
     const char* file_path_;

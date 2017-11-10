@@ -30,11 +30,11 @@ void Logger::addFrontDate()
 
 void Logger::addEnd()
 {
-    addNewLine();
+    addNewLineCharacter();
     log_.flush();
 }
 
-void Logger::addNewLine()
+void Logger::addNewLineCharacter()
 {
     log_ << "\r\n";
 }
