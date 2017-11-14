@@ -75,17 +75,15 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
 #endif
                 if (event_count_ < kMaxEvents)
                 {
-                    /*
                     // STOP message
-                    VstMidiEvent* evStop = (VstMidiEvent*)outEvents->events[eventCount];
-                    ++eventCount;
+                    VstMidiEvent* evStop = (VstMidiEvent*)out_events_->events[event_count_];
+                    ++event_count_;
                     evStop->deltaFrames = inEv->deltaFrames;
                     evStop->noteLength = 0;
-                    evStop->midiData[0] = STOP;
+                    evStop->midiData[0] = kStop;
                     evStop->midiData[1] = 0;
                     evStop->midiData[2] = 0;
                     evStop->midiData[3] = 0;
-                    */
                 }
             }
             // Received NOTE ON message (accept all channels)
@@ -113,17 +111,15 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evPrgChg->midiData[2] = 0;
                     evPrgChg->midiData[3] = 0;
 
-                    /*
                     // START message
-                    VstMidiEvent* evStart = (VstMidiEvent*)outEvents->events[eventCount];
-                    ++eventCount;
+                    VstMidiEvent* evStart = (VstMidiEvent*)out_events_->events[event_count_];
+                    ++event_count_;
                     evStart->deltaFrames = inEv->deltaFrames;
                     evStart->noteLength = 0;
-                    evStart->midiData[0] = START;
+                    evStart->midiData[0] = kStart;
                     evStart->midiData[1] = 0;
                     evStart->midiData[2] = 0;
                     evStart->midiData[3] = 0;
-                    */
                 }
             }
         }
@@ -154,7 +150,6 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         (*out2++) = 0.0f;
     }
 
-#if _DEBUG
     VstTimeInfo* time_info = getTimeInfo(
         kVstTransportPlaying |
         kVstTransportCycleActive |
@@ -167,16 +162,49 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         0
     );
 
+    double tempo = time_info->tempo;
+    double sample_rate = time_info->sampleRate;
+    double clocks_per_second = tempo * 24.0 / 60.0;
+    double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
+
+    // host is playing
     if (time_info->flags & kVstTransportPlaying)
     {
+#if _DEBUG
         logger_->addFrontDate();
         logger_->addMessageSpace(kLogAlignRight, 3, "PpqPos: ");
         logger_->addMessage(kLogAlignLeft, 0, time_info->ppqPos);
         if (time_info->samplesToNextClock == 0)
             logger_->addMessage(kLogAlignLeft, 0, " *");
         logger_->addEnd();
-    }
 #endif
+
+        VstInt32 samples_to_next_clock = time_info->samplesToNextClock;
+        double next_clock_sample_frame;
+
+        if (samples_to_next_clock < 0)
+        {
+            next_clock_sample_frame = samples_per_clock + samples_to_next_clock;
+        }
+        else
+        {
+            next_clock_sample_frame = samples_to_next_clock;
+        }
+
+        while (next_clock_sample_frame < sample_frames)
+        {
+            VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
+            ++event_count_;
+            ev->deltaFrames = (VstInt32)next_clock_sample_frame;
+            ev->noteLength = 0;
+            ev->midiData[0] = kClock;
+            ev->midiData[1] = 0;
+            ev->midiData[2] = 0;
+            ev->midiData[3] = 0;
+
+            next_clock_sample_frame = next_clock_sample_frame + samples_per_clock;
+        }
+    }
 
     // send events
     if (event_count_ > 0)
