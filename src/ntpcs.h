@@ -41,4 +41,6 @@ public:
 private:
     VstInt32 event_count_;
     VstEvents* out_events_;
+    char last_note_on_;         // note number of last pressed key
+    unsigned int polyphony_;    // number of notes pressed simultaneously
 };

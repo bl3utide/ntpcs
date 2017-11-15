@@ -8,6 +8,8 @@ AudioEffect* createEffectInstance(audioMasterCallback audio_master)
 Ntpcs::Ntpcs(audioMasterCallback audio_master)
     : AudioEffectX(audio_master, kNumPrograms, kNumParams)
     , event_count_(0)
+    , last_note_on_(0)
+    , polyphony_(0)
 {
 #if _DEBUG
     plog::init<plog::NtpcsLogFormatter>(plog::debug, "ntpcs.debug.log");
@@ -66,15 +68,21 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
 #endif
                 if (event_count_ < kMaxEvents)
                 {
-                    // STOP message
-                    VstMidiEvent* evStop = (VstMidiEvent*)out_events_->events[event_count_];
-                    ++event_count_;
-                    evStop->deltaFrames = inEv->deltaFrames;
-                    evStop->noteLength = 0;
-                    evStop->midiData[0] = kStop;
-                    evStop->midiData[1] = 0;
-                    evStop->midiData[2] = 0;
-                    evStop->midiData[3] = 0;
+                    if (polyphony_ == 1)
+                    {
+                        // STOP message
+                        VstMidiEvent* evStop = (VstMidiEvent*)out_events_->events[event_count_];
+                        ++event_count_;
+                        evStop->deltaFrames = inEv->deltaFrames;
+                        evStop->noteLength = 0;
+                        evStop->midiData[0] = kStop;
+                        evStop->midiData[1] = 0;
+                        evStop->midiData[2] = 0;
+                        evStop->midiData[3] = 0;
+                    }
+
+                    if (polyphony_ > 0)
+                        --polyphony_;
                 }
             }
             // Received NOTE ON message (accept all channels)
@@ -99,15 +107,21 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     evPrgChg->midiData[2] = 0;
                     evPrgChg->midiData[3] = 0;
 
-                    // START message
-                    VstMidiEvent* evStart = (VstMidiEvent*)out_events_->events[event_count_];
-                    ++event_count_;
-                    evStart->deltaFrames = inEv->deltaFrames;
-                    evStart->noteLength = 0;
-                    evStart->midiData[0] = kStart;
-                    evStart->midiData[1] = 0;
-                    evStart->midiData[2] = 0;
-                    evStart->midiData[3] = 0;
+                    if (polyphony_ == 0)
+                    {
+                        // START message
+                        VstMidiEvent* evStart = (VstMidiEvent*)out_events_->events[event_count_];
+                        ++event_count_;
+                        evStart->deltaFrames = inEv->deltaFrames;
+                        evStart->noteLength = 0;
+                        evStart->midiData[0] = kStart;
+                        evStart->midiData[1] = 0;
+                        evStart->midiData[2] = 0;
+                        evStart->midiData[3] = 0;
+                    }
+
+                    last_note_on_ = inEv->midiData[1];
+                    ++polyphony_;
                 }
             }
         }
@@ -148,7 +162,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
 #endif
 
     // host is playing
-    if (time_info->flags & kVstTransportPlaying)
+    if (time_info->flags & kVstTransportPlaying && polyphony_ > 0)
     {
 #if _DEBUG
         LOGD << "      ppqPos: " << time_info->ppqPos;
