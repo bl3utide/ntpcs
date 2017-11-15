@@ -54,10 +54,10 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             VstMidiEvent* inEv = (VstMidiEvent*)(events->events[i]);
 #if _DEBUG
             LOGD << "Input MIDI msg: "
-                << inEv->midiData[0] << " "
-                << inEv->midiData[1] << " "
-                << inEv->midiData[2] << " "
-                << inEv->midiData[3];
+                << int(inEv->midiData[0]) << " "
+                << int(inEv->midiData[1]) << " "
+                << int(inEv->midiData[2]) << " "
+                << int(inEv->midiData[3]);
             LOGD << "   deltaFrames: " << inEv->deltaFrames;
 #endif
             // Receive NOTE OFF message (accept all channels)
@@ -153,24 +153,22 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         0
     );
 
-    double tempo = time_info->tempo;
-    double sample_rate = time_info->sampleRate;
-    double clocks_per_second = tempo * 24.0 / 60.0;
-    double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
-#if _DEBUG
-    LOGD << "samplesPerClock: " << samples_per_clock;
-#endif
-
     // host is playing
     if (time_info->flags & kVstTransportPlaying && polyphony_ > 0)
     {
-#if _DEBUG
-        LOGD << "      ppqPos: " << time_info->ppqPos;
-        LOGD << "sampleFrames: " << sample_frames;
-#endif
+        double tempo = time_info->tempo;
+        double sample_rate = time_info->sampleRate;
+        double clocks_per_second = tempo * 24.0 / 60.0;
+        double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
 
         VstInt32 samples_to_next_clock = time_info->samplesToNextClock;
         double next_clock_sample_frame;
+#if _DEBUG
+        LOGD << "      ppqPos: " << time_info->ppqPos;
+        LOGD << "sampleFrames: " << sample_frames;
+        LOGD << "samplesPerClock:    " << samples_per_clock;
+        LOGD << "samplesToNextClock: " << samples_to_next_clock;
+#endif
 
         if (samples_to_next_clock < 0)
         {
