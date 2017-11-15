@@ -1,2 +1,2 @@
 # ntpcs
-Note Triggered Program Change and Sync
+Note Triggered Program Change and Clock Sync
