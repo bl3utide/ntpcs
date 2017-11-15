@@ -143,6 +143,9 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
     double sample_rate = time_info->sampleRate;
     double clocks_per_second = tempo * 24.0 / 60.0;
     double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
+#if _DEBUG
+    LOGD << "samplesPerClock: " << samples_per_clock;
+#endif
 
     // host is playing
     if (time_info->flags & kVstTransportPlaying)
@@ -174,6 +177,10 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
             ev->midiData[1] = 0;
             ev->midiData[2] = 0;
             ev->midiData[3] = 0;
+#if _DEBUG
+            LOGD << "<< SEND MIDI EVENT: CLOCK >> "
+                << "deltaFrames: " << ev->deltaFrames;
+#endif
 
             next_clock_sample_frame = next_clock_sample_frame + samples_per_clock;
         }
