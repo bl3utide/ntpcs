@@ -10,8 +10,8 @@ Ntpcs::Ntpcs(audioMasterCallback audio_master)
     , event_count_(0)
 {
 #if _DEBUG
-    logger_ = new Logger("./ntpcs_run.log");
-    logger_->addOneLine("Loading");
+    plog::init<plog::NtpcsLogFormatter>(plog::debug, "ntpcs.debug.log");
+    LOGD << "init";
 #endif
     setNumInputs(0);
     setNumOutputs(2);
@@ -34,8 +34,7 @@ Ntpcs::Ntpcs(audioMasterCallback audio_master)
 Ntpcs::~Ntpcs()
 {
 #if _DEBUG
-    logger_->addOneLine("Closed");
-    delete logger_;
+    LOGD << "close";
 #endif
     for (unsigned int i = 0; i < kMaxEvents; ++i)
     {
@@ -46,32 +45,24 @@ Ntpcs::~Ntpcs()
 
 VstInt32 Ntpcs::processEvents(VstEvents* events)
 {
-#if _DEBUG
-    logger_->addEnd();
-    logger_->addOneLine("-- START processEvents --");
-#endif
     for (int i = 0; i < events->numEvents; ++i)
     {
         if (events->events[i]->type == kVstMidiType)
         {
             VstMidiEvent* inEv = (VstMidiEvent*)(events->events[i]);
 #if _DEBUG
-            logger_->addFrontDate();
-            logger_->addMessage("Input MIDI msg:");
-            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[0]));
-            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[1]));
-            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[2]));
-            logger_->addMessage(kLogAlignRight, 5, int(inEv->midiData[3]));
-            logger_->addEnd();
-            logger_->addMessageSpace(kLogAlignRight, 20, "   deltaFrames: ");
-            logger_->addMessage(inEv->deltaFrames);
-            logger_->addEnd();
+            LOGD << "Input MIDI msg: "
+                << inEv->midiData[0] << " "
+                << inEv->midiData[1] << " "
+                << inEv->midiData[2] << " "
+                << inEv->midiData[3];
+            LOGD << "   deltaFrames: " << inEv->deltaFrames;
 #endif
             // Receive NOTE OFF message (accept all channels)
             if (kNoteOff <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= kNoteOff + 0x0f)
             {
 #if _DEBUG
-                logger_->addOneLine("Received NOTE OFF");
+                LOGD << "Received NOTE OFF";
 #endif
                 if (event_count_ < kMaxEvents)
                 {
@@ -90,17 +81,14 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
             else if (kNoteOn <= int(inEv->midiData[0]) && int(inEv->midiData[0]) <= kNoteOn + 0x0f)
             {
 #if _DEBUG
-                logger_->addOneLine("Received NOTE ON");
+                LOGD << "Received NOTE ON";
 #endif
                 if (event_count_ < kMaxEvents - 1)    // set two messages
                 {
                     // PROGRAM CHANGE message
                     char channel = inEv->midiData[0] - kNoteOn;
 #if _DEBUG
-                    logger_->addFrontDate();
-                    logger_->addMessage(kLogAlignLeft, 0, "Received channel: ");
-                    logger_->addMessage(kLogAlignLeft, 0, int(channel));
-                    logger_->addEnd();
+                    LOGD << "Received channel: " << int(channel);
 #endif
                     VstMidiEvent* evPrgChg = (VstMidiEvent*)out_events_->events[event_count_];
                     ++event_count_;
@@ -125,22 +113,11 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
         }
     }
 
-#if _DEBUG
-    logger_->addOneLine("-- END processEvents --");
-#endif
     return 1;
 }
 
 void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_frames)
 {
-#if _DEBUG
-    logger_->addOneLine("-- START processReplacing --");
-
-    logger_->addMessageSpace(kLogAlignRight, 23, "sample frames: ");
-    logger_->addMessage(sample_frames);
-    logger_->addEnd();
-#endif
-
     // dummy
     float *out1 = outputs[0];
     float *out2 = outputs[1];
@@ -171,12 +148,8 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
     if (time_info->flags & kVstTransportPlaying)
     {
 #if _DEBUG
-        logger_->addFrontDate();
-        logger_->addMessageSpace(kLogAlignRight, 3, "PpqPos: ");
-        logger_->addMessage(kLogAlignLeft, 0, time_info->ppqPos);
-        if (time_info->samplesToNextClock == 0)
-            logger_->addMessage(kLogAlignLeft, 0, " *");
-        logger_->addEnd();
+        LOGD << "      ppqPos: " << time_info->ppqPos;
+        LOGD << "sampleFrames: " << sample_frames;
 #endif
 
         VstInt32 samples_to_next_clock = time_info->samplesToNextClock;
@@ -213,10 +186,6 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         sendVstEventsToHost(out_events_);
         event_count_ = 0;
     }
-
-#if _DEBUG
-    logger_->addOneLine("-- END processReplacing --");
-#endif
 }
 
 VstInt32 Ntpcs::canDo(char* text)

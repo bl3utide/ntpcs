@@ -45,11 +45,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)vstsdk2.4;$(ProjectDir)vstsdk2.4\public.sdk\source\vst2.x;$(ProjectDir)vstsdk2.4\pluginterfaces\vst2.x;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)vstsdk2.4;$(ProjectDir)vstsdk2.4\public.sdk\source\vst2.x;$(ProjectDir)vstsdk2.4\pluginterfaces\vst2.x;$(ProjectDir)include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)vstsdk2.4;$(ProjectDir)vstsdk2.4\public.sdk\source\vst2.x;$(ProjectDir)vstsdk2.4\pluginterfaces\vst2.x;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)vstsdk2.4;$(ProjectDir)vstsdk2.4\public.sdk\source\vst2.x;$(ProjectDir)vstsdk2.4\pluginterfaces\vst2.x;$(ProjectDir)include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -89,7 +89,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\ntpcs.cpp" />
-    <ClCompile Include="src\util\logger.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\audioeffect.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\audioeffectx.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\vstplugmain.cpp" />
@@ -98,8 +97,8 @@
     <None Include="ntpcs.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\logger.h" />
     <ClInclude Include="src\ntpcs.h" />
-    <ClInclude Include="src\util\logger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

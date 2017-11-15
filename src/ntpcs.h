@@ -1,10 +1,10 @@
 #pragma once
 
 #if _DEBUG
-#include <fstream>
+#include "logger.h"
 #endif
+#include <cmath>
 #include "audioeffectx.h"
-#include "util/logger.h"
 
 #define kMaxEvents 64
 #define kNumPrograms 1
@@ -39,9 +39,6 @@ public:
     virtual void getParameterName(VstInt32, char*);
 
 private:
-#if _DEBUG
-    Logger* logger_;
-#endif
     VstInt32 event_count_;
     VstEvents* out_events_;
 };
