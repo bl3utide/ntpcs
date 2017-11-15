@@ -167,7 +167,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
             next_clock_sample_frame = samples_to_next_clock;
         }
 
-        while (next_clock_sample_frame < sample_frames)
+        while (next_clock_sample_frame < sample_frames - 1)
         {
             VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
             ++event_count_;
