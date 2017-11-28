@@ -167,7 +167,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
     );
 
     // send timing clock
-    VstInt32 remain_sample_frames = sample_frames;
+    double remain_sample_frames = (double)sample_frames;
     double tempo = time_info->tempo;
     double sample_rate = time_info->sampleRate;
     double clocks_per_second = tempo * 24.0 / 60.0;
@@ -175,7 +175,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
 
     while (prev_remainder_sample_frames_ + sample_frames > samples_per_clock)
     {
-        VstInt32 delta_frames = samples_per_clock - prev_remainder_sample_frames_;
+        double delta_frames = samples_per_clock - prev_remainder_sample_frames_;
 
         VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
         ++event_count_;
