@@ -10,6 +10,7 @@ Ntpcs::Ntpcs(audioMasterCallback audio_master)
     , event_count_(0)
     , last_note_on_(0)
     , polyphony_(0)
+    , prev_remainder_sample_frames_(0)
 {
 #if _DEBUG
     plog::init<plog::NtpcsLogFormatter>(plog::debug, "ntpcs.debug.log");
@@ -165,6 +166,34 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         0
     );
 
+    // send timing clock
+    VstInt32 remain_sample_frames = sample_frames;
+    double tempo = time_info->tempo;
+    double sample_rate = time_info->sampleRate;
+    double clocks_per_second = tempo * 24.0 / 60.0;
+    double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
+
+    while (prev_remainder_sample_frames_ + sample_frames > samples_per_clock)
+    {
+        VstInt32 delta_frames = samples_per_clock - prev_remainder_sample_frames_;
+
+        VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
+        ++event_count_;
+        ev->deltaFrames = (VstInt32)delta_frames;
+        ev->noteLength = 0;
+        ev->midiData[0] = kClock;
+        ev->midiData[1] = 0;
+        ev->midiData[2] = 0;
+        ev->midiData[3] = 0;
+#if _DEBUG
+        LOGD << "<< SEND MIDI EVENT: CLOCK >> "
+            << "deltaFrames: " << ev->deltaFrames;
+#endif
+        remain_sample_frames -= delta_frames;
+        prev_remainder_sample_frames_ = 0;
+    }
+    prev_remainder_sample_frames_ = remain_sample_frames;
+
     // host is playing
     if (time_info->flags & kVstTransportPlaying)
     {
@@ -172,6 +201,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         LOGD << "      ppqPos: " << time_info->ppqPos;
         LOGD << "sampleFrames: " << sample_frames;
 #endif
+/*
         if (polyphony_ > 0)
         {
             double tempo = time_info->tempo;
@@ -212,6 +242,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
                 next_clock_sample_frame = next_clock_sample_frame + samples_per_clock;
             }
         }
+*/
     }
 
     // send events

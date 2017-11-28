@@ -43,4 +43,5 @@ private:
     VstEvents* out_events_;
     char last_note_on_;         // note number of last pressed key
     unsigned int polyphony_;    // number of notes pressed simultaneously
+    VstInt32 prev_remainder_sample_frames_;     // previous remainder samples
 };
