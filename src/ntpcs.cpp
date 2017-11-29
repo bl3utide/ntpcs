@@ -135,58 +135,54 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
         0
     );
 
-    // host is playing
-    if (time_info->flags & kVstTransportPlaying)
+#if _DEBUG
+    LOGD << "      ppqPos: " << time_info->ppqPos;
+    LOGD << "sampleFrames: " << sample_frames;
+#endif
+
+    // send timing clock
+    double current_sample_cursor = 0.0;
+    double tempo = time_info->tempo;
+    double sample_rate = time_info->sampleRate;
+    double clocks_per_second = tempo * 24.0 / 60.0;
+    double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
+
+    if (!sent_first_clock_)
     {
+        char midi_data_first[4] = { kClock, 0, 0, 0 };
+        VstMidiEvent* ev = transmitter->addMidiEvent(0, 0, midi_data_first);
 #if _DEBUG
-        LOGD << "      ppqPos: " << time_info->ppqPos;
-        LOGD << "sampleFrames: " << sample_frames;
+        LOGD << "<< SEND MIDI EVENT: CLOCK >> "
+            << "deltaFrames: " << ev->deltaFrames;
 #endif
-
-        // send timing clock
-        double current_sample_cursor = 0.0;
-        double tempo = time_info->tempo;
-        double sample_rate = time_info->sampleRate;
-        double clocks_per_second = tempo * 24.0 / 60.0;
-        double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
-
-        if (!sent_first_clock_)
-        {
-            char midi_data_first[4] = { kClock, 0, 0, 0 };
-            VstMidiEvent* ev = transmitter->addMidiEvent(0, 0, midi_data_first);
-#if _DEBUG
-            LOGD << "<< SEND MIDI EVENT: CLOCK >> "
-                << "deltaFrames: " << ev->deltaFrames;
-#endif
-            sent_first_clock_ = true;
-        }
-
-        while (prev_remainder_sample_frames_ + sample_frames - current_sample_cursor > samples_per_clock)
-        {
-            double delta_frames = 0.0;
-            if (prev_remainder_sample_frames_ != 0)
-            {
-                delta_frames = samples_per_clock - abs(prev_remainder_sample_frames_);
-            }
-            else
-            {
-                delta_frames = current_sample_cursor + samples_per_clock;
-            }
-
-            char midi_data_clock[4] = { kClock, 0, 0, 0 };
-            VstMidiEvent* ev = transmitter->addMidiEvent((VstInt32)delta_frames, 0, midi_data_clock);
-#if _DEBUG
-            LOGD << "<< SEND MIDI EVENT: CLOCK >> "
-                << "deltaFrames: " << ev->deltaFrames;
-#endif
-            current_sample_cursor = delta_frames;
-            prev_remainder_sample_frames_ = 0;
-        }
-        prev_remainder_sample_frames_ += sample_frames - current_sample_cursor;
-#if _DEBUG
-        LOGD << "remainderSampleFrames: " << prev_remainder_sample_frames_;
-#endif
+        sent_first_clock_ = true;
     }
+
+    while (prev_remainder_sample_frames_ + sample_frames - current_sample_cursor > samples_per_clock)
+    {
+        double delta_frames = 0.0;
+        if (prev_remainder_sample_frames_ != 0)
+        {
+            delta_frames = samples_per_clock - abs(prev_remainder_sample_frames_);
+        }
+        else
+        {
+            delta_frames = current_sample_cursor + samples_per_clock;
+        }
+
+        char midi_data_clock[4] = { kClock, 0, 0, 0 };
+        VstMidiEvent* ev = transmitter->addMidiEvent((VstInt32)delta_frames, 0, midi_data_clock);
+#if _DEBUG
+        LOGD << "<< SEND MIDI EVENT: CLOCK >> "
+            << "deltaFrames: " << ev->deltaFrames;
+#endif
+        current_sample_cursor = delta_frames;
+        prev_remainder_sample_frames_ = 0;
+    }
+    prev_remainder_sample_frames_ += sample_frames - current_sample_cursor;
+#if _DEBUG
+    LOGD << "remainderSampleFrames: " << prev_remainder_sample_frames_;
+#endif
 
     // send events
     transmitter->sendEvents();
