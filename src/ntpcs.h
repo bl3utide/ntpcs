@@ -44,4 +44,5 @@ private:
     char last_note_on_;         // note number of last pressed key
     unsigned int polyphony_;    // number of notes pressed simultaneously
     double prev_remainder_sample_frames_;   // previous remainder samples
+    bool sent_first_clock_;                 // true if this plugin sent first timing clock
 };
