@@ -5,17 +5,10 @@
 #endif
 #include <cmath>
 #include "audioeffectx.h"
+#include "transmitter.h"
 
-#define kMaxEvents 64
 #define kNumPrograms 1
 #define kNumParams 0
-
-const char kNoteOff = 0x80;
-const char kNoteOn = 0x90;
-const char kProgramChange = 0xC0;
-const char kClock = 0xF8;
-const char kStart = 0xFA;
-const char kStop = 0xFC;
 
 class Ntpcs : public AudioEffectX
 {
@@ -39,8 +32,7 @@ public:
     virtual void getParameterName(VstInt32, char*);
 
 private:
-    VstInt32 event_count_;
-    VstEvents* out_events_;
+    EventTransmitter* transmitter;
     char last_note_on_;         // note number of last pressed key
     unsigned int polyphony_;    // number of notes pressed simultaneously
     double prev_remainder_sample_frames_;   // previous remainder samples

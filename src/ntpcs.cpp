@@ -7,7 +7,6 @@ AudioEffect* createEffectInstance(audioMasterCallback audio_master)
 
 Ntpcs::Ntpcs(audioMasterCallback audio_master)
     : AudioEffectX(audio_master, kNumPrograms, kNumParams)
-    , event_count_(0)
     , last_note_on_(0)
     , polyphony_(0)
     , prev_remainder_sample_frames_(0)
@@ -23,16 +22,7 @@ Ntpcs::Ntpcs(audioMasterCallback audio_master)
     canProcessReplacing(true);
     isSynth(false);
 
-    // init events
-    size_t size = sizeof(VstEvents) + kMaxEvents * sizeof(VstEvent*);
-    out_events_ = (VstEvents*)malloc(size);
-    for (unsigned int i = 0; i < kMaxEvents; ++i)
-    {
-        out_events_->events[i] = (VstEvent*)calloc(1, sizeof(VstMidiEvent));
-        VstEvent* ev = out_events_->events[i];
-        ev->type = kVstMidiType;
-        ev->byteSize = sizeof(VstMidiEvent);
-    }
+    transmitter = new EventTransmitter(this);
 }
 
 Ntpcs::~Ntpcs()
@@ -40,11 +30,7 @@ Ntpcs::~Ntpcs()
 #if _DEBUG
     LOGD << "close";
 #endif
-    for (unsigned int i = 0; i < kMaxEvents; ++i)
-    {
-        free(out_events_->events[i]);
-    }
-    free(out_events_);
+    delete transmitter;
 }
 
 VstInt32 Ntpcs::processEvents(VstEvents* events)
@@ -68,19 +54,13 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
 #if _DEBUG
                 LOGD << "Received NOTE OFF";
 #endif
-                if (event_count_ < kMaxEvents)
+                if (transmitter->getEventCount() < kMaxEvents)
                 {
                     if (polyphony_ == 1)
                     {
                         // STOP message
-                        VstMidiEvent* evStop = (VstMidiEvent*)out_events_->events[event_count_];
-                        ++event_count_;
-                        evStop->deltaFrames = inEv->deltaFrames;
-                        evStop->noteLength = 0;
-                        evStop->midiData[0] = kStop;
-                        evStop->midiData[1] = 0;
-                        evStop->midiData[2] = 0;
-                        evStop->midiData[3] = 0;
+                        char midi_data_stop[4] = { kStop, 0, 0, 0 };
+                        VstMidiEvent* evStop = transmitter->addMidiEvent(inEv->deltaFrames, 0, midi_data_stop);
 #if _DEBUG
                         LOGD << "<< SEND MIDI EVENT: STOP >> "
                             << "deltaFrames: " << evStop->deltaFrames;
@@ -97,21 +77,15 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
 #if _DEBUG
                 LOGD << "Received NOTE ON";
 #endif
-                if (event_count_ < kMaxEvents - 1)    // set two messages
+                if (transmitter->getEventCount() < kMaxEvents - 1)    // set two messages
                 {
                     // PROGRAM CHANGE message
                     char channel = inEv->midiData[0] - kNoteOn;
 #if _DEBUG
                     LOGD << "Received channel: " << int(channel);
 #endif
-                    VstMidiEvent* evPrgChg = (VstMidiEvent*)out_events_->events[event_count_];
-                    ++event_count_;
-                    evPrgChg->deltaFrames = inEv->deltaFrames;
-                    evPrgChg->noteLength = 0;
-                    evPrgChg->midiData[0] = kProgramChange + channel;
-                    evPrgChg->midiData[1] = inEv->midiData[1];        // program number
-                    evPrgChg->midiData[2] = 0;
-                    evPrgChg->midiData[3] = 0;
+                    char midi_data_prg_chg[4] = { kProgramChange + channel, inEv->midiData[1], 0, 0 };
+                    VstMidiEvent* evPrgChg = transmitter->addMidiEvent(inEv->deltaFrames, 0, midi_data_prg_chg);
 #if _DEBUG
                     LOGD << "<< SEND MIDI EVENT: PROGRAM CHANGE >> "
                         << "deltaFrames: " << evPrgChg->deltaFrames;
@@ -120,14 +94,8 @@ VstInt32 Ntpcs::processEvents(VstEvents* events)
                     if (polyphony_ == 0)
                     {
                         // START message
-                        VstMidiEvent* evStart = (VstMidiEvent*)out_events_->events[event_count_];
-                        ++event_count_;
-                        evStart->deltaFrames = inEv->deltaFrames;
-                        evStart->noteLength = 0;
-                        evStart->midiData[0] = kStart;
-                        evStart->midiData[1] = 0;
-                        evStart->midiData[2] = 0;
-                        evStart->midiData[3] = 0;
+                        char midi_data_start[4] = { kStart, 0, 0, 0 };
+                        VstMidiEvent* evStart = transmitter->addMidiEvent(inEv->deltaFrames, 0, midi_data_start);
 #if _DEBUG
                         LOGD << "<< SEND MIDI EVENT: START >> "
                             << "deltaFrames: " << evStart->deltaFrames;
@@ -184,14 +152,8 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
 
         if (!sent_first_clock_)
         {
-            VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
-            ++event_count_;
-            ev->deltaFrames = 0;
-            ev->noteLength = 0;
-            ev->midiData[0] = kClock;
-            ev->midiData[1] = 0;
-            ev->midiData[2] = 0;
-            ev->midiData[3] = 0;
+            char midi_data_first[4] = { kClock, 0, 0, 0 };
+            VstMidiEvent* ev = transmitter->addMidiEvent(0, 0, midi_data_first);
 #if _DEBUG
             LOGD << "<< SEND MIDI EVENT: CLOCK >> "
                 << "deltaFrames: " << ev->deltaFrames;
@@ -211,14 +173,8 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
                 delta_frames = current_sample_cursor + samples_per_clock;
             }
 
-            VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
-            ++event_count_;
-            ev->deltaFrames = (VstInt32)delta_frames;
-            ev->noteLength = 0;
-            ev->midiData[0] = kClock;
-            ev->midiData[1] = 0;
-            ev->midiData[2] = 0;
-            ev->midiData[3] = 0;
+            char midi_data_clock[4] = { kClock, 0, 0, 0 };
+            VstMidiEvent* ev = transmitter->addMidiEvent((VstInt32)delta_frames, 0, midi_data_clock);
 #if _DEBUG
             LOGD << "<< SEND MIDI EVENT: CLOCK >> "
                 << "deltaFrames: " << ev->deltaFrames;
@@ -276,12 +232,7 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
     }
 
     // send events
-    if (event_count_ > 0)
-    {
-        out_events_->numEvents = event_count_;
-        sendVstEventsToHost(out_events_);
-        event_count_ = 0;
-    }
+    transmitter->sendEvents();
 }
 
 VstInt32 Ntpcs::canDo(char* text)

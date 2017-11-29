@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\ntpcs.cpp" />
+    <ClCompile Include="src\transmitter.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\audioeffect.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\audioeffectx.cpp" />
     <ClCompile Include="vstsdk2.4\public.sdk\source\vst2.x\vstplugmain.cpp" />
@@ -99,6 +100,7 @@
   <ItemGroup>
     <ClInclude Include="src\logger.h" />
     <ClInclude Include="src\ntpcs.h" />
+    <ClInclude Include="src\transmitter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
