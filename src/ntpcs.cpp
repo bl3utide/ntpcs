@@ -186,49 +186,6 @@ void Ntpcs::processReplacing(float** inputs, float** outputs, VstInt32 sample_fr
 #if _DEBUG
         LOGD << "remainderSampleFrames: " << prev_remainder_sample_frames_;
 #endif
-
-/*
-        if (polyphony_ > 0)
-        {
-            double tempo = time_info->tempo;
-            double sample_rate = time_info->sampleRate;
-            double clocks_per_second = tempo * 24.0 / 60.0;
-            double samples_per_clock = sample_rate * (1.0 / clocks_per_second);
-
-            VstInt32 samples_to_next_clock = time_info->samplesToNextClock;
-            double next_clock_sample_frame;
-#if _DEBUG
-            LOGD << "samplesPerClock:    " << samples_per_clock;
-            LOGD << "samplesToNextClock: " << samples_to_next_clock;
-#endif
-
-            if (samples_to_next_clock < 0)
-            {
-                next_clock_sample_frame = samples_per_clock + samples_to_next_clock;
-            }
-            else
-            {
-                next_clock_sample_frame = samples_to_next_clock;
-            }
-
-            while (next_clock_sample_frame < sample_frames - 1)
-            {
-                VstMidiEvent* ev = (VstMidiEvent*)out_events_->events[event_count_];
-                ++event_count_;
-                ev->deltaFrames = (VstInt32)next_clock_sample_frame;
-                ev->noteLength = 0;
-                ev->midiData[0] = kClock;
-                ev->midiData[1] = 0;
-                ev->midiData[2] = 0;
-                ev->midiData[3] = 0;
-#if _DEBUG
-                LOGD << "<< SEND MIDI EVENT: CLOCK >> "
-                    << "deltaFrames: " << ev->deltaFrames;
-#endif
-                next_clock_sample_frame = next_clock_sample_frame + samples_per_clock;
-            }
-        }
-*/
     }
 
     // send events
