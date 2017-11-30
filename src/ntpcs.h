@@ -10,6 +10,9 @@
 #define kNumPrograms 1
 #define kNumParams 0
 
+// NOTE: Enable GUI operation in the future
+#define kMidiClockTransmitterMode 0
+
 class Ntpcs : public AudioEffectX
 {
 public:
